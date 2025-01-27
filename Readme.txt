@@ -1,0 +1,1 @@
+/* This code used for find avail sensors attached with multiplexer */
