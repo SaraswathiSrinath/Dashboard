@@ -5,14 +5,16 @@
 const uint32_t I2C_CLOCK_SPEED = 1000000;
 const uint8_t I2C_SDA = 21;
 const uint8_t I2C_SCL = 22;
-const uint8_t NUM_CAMERAS = 3;
+const uint8_t NUM_CAMERAS = 5;
 
 
 const uint8_t MULTIPLEXER_ADDRESS = 0x70;  // TCA9548A address
 const uint8_t CAMERA_ADDRESSES[NUM_CAMERAS] = {
-    0x33,  // 0x33
-    0x33,  // 0x33
-    0x33  // Second camera address
+    0x33,  
+    0x33,  
+    0x33,
+    0x33,
+    0x33
 };
 // Array of camera objects
 Adafruit_MLX90640 mlx[NUM_CAMERAS];
