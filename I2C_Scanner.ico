@@ -1,0 +1,73 @@
+
+#include <Wire.h>
+#include <Adafruit_MLX90640.h>
+ 
+const uint32_t I2C_CLOCK_SPEED = 1000000;
+const uint8_t I2C_SDA = 21;
+const uint8_t I2C_SCL = 22;
+const uint8_t NUM_CAMERAS = 3;
+
+
+const uint8_t MULTIPLEXER_ADDRESS = 0x70;  // TCA9548A address
+const uint8_t CAMERA_ADDRESSES[NUM_CAMERAS] = {
+    0x33,  // 0x33
+    0x33,  // 0x33
+    0x33  // Second camera address
+};
+// Array of camera objects
+Adafruit_MLX90640 mlx[NUM_CAMERAS];
+
+void selectI2CChannel(uint8_t channel) {
+  Wire.beginTransmission(0x70);  // PCA9548A default address
+  Wire.write(1 << channel);     // Activate the desired channel (0 to 7)
+  Wire.endTransmission();
+}
+
+void setup() {
+  //Wire.begin(8, 9); // Initialize I²C with SDA on GPIO 8 and SCL on GPIO 9 S3
+  Serial.begin(115200);
+  delay(2000);  
+  
+  Wire.begin(I2C_SDA, I2C_SCL, I2C_CLOCK_SPEED);
+  Serial.println("\nI2C Scanner");
+}
+ 
+void loop() {
+  byte error, address;
+  int nDevices;
+  Serial.println("Scanning...");
+  nDevices = 0;
+  
+  for (uint8_t channel = 0; channel < NUM_CAMERAS; channel++) {  // Loop through all PCA9548A channels
+    Serial.printf("\nScanning on channel %d...\n", channel);
+    selectI2CChannel(channel);  // Select the PCA9548A channel
+
+        if (!mlx[channel].begin(CAMERA_ADDRESSES[channel], &Wire)) {
+            Serial.printf("MLX90640 #%d initialization failed\n", channel);
+        }        
+        Serial.printf("Camera #%d (%d) initialized successfully\n", channel, CAMERA_ADDRESSES[channel]);
+       
+
+    nDevices = 0;
+    for (address = 1; address < 127; address++) {
+      Wire.beginTransmission(address);
+      error = Wire.endTransmission();
+      if (error == 0) {
+        Serial.print("I2C device found at address 0x");
+        if (address < 16) Serial.print("0");
+        Serial.println(address, HEX);
+        nDevices++;
+      } else if (error == 4) {
+        Serial.print("Unknown error at address 0x");
+        if (address < 16) Serial.print("0");
+        Serial.println(address, HEX);
+      }
+    }
+    
+    if (nDevices == 0) {
+      Serial.println("No I2C devices found\n");
+    } else {
+      Serial.println("Scanning done\n");
+    }
+  }
+  delay(5000);  // Wait before scanning again    
